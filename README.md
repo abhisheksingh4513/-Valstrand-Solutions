@@ -28,3 +28,46 @@ This application guarantees data consistency and prevents race conditions throug
 - **Atomic Transitions**: The worker advances jobs to the next stage using `Job.findOneAndUpdate()`. Crucially, this query filters heavily by both the `jobId` *and* the job's expected current `status` (e.g., `{ _id: jobId, status: fromStatus }`).
 - **Idempotency**: Because the atomic update checks the `status`, if two concurrent workers somehow attempt to move the same job from "Preparing" to "Out for Delivery", only the first worker's query will find a match. The second worker will find that the condition `status: "Preparing"` is no longer true and will exit safely without corrupting the timeline.
 - **Stage Tracking**: MongoDB's `$set` and `$push` operators are used atomically to update text progress and append timestamps to an array of stages in a single network roundtrip, guaranteeing that the job's data model is always perfectly synchronized with its execution state.
+
+## Setup Instructions
+
+### Prerequisites
+- **Node.js**
+- **MongoDB** (running locally or via a cloud provider like MongoDB Atlas)
+
+### 1. Backend Setup
+1. Open a terminal and navigate to the `server` directory:
+   ```bash
+   cd server
+   ```
+2. Install the required dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file in the root of the `server` directory. Add your MongoDB connection string and a port:
+   ```env
+   MONGO_URI=your_mongodb_connection_string
+   PORT=5000
+   ```
+4. Start the backend development server:
+   ```bash
+   npm run dev
+   ```
+   *(The server will start on port 5000 by default)*
+
+### 2. Frontend Setup
+1. Open a new terminal window/tab and navigate to the `client` directory:
+   ```bash
+   cd client
+   ```
+2. Install the required dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Vite frontend development server:
+   ```bash
+   npm run dev
+   ```
+
+### 3. Running the Application
+Once both servers are running, open your web browser and navigate to the URL provided by your Vite terminal (usually `http://localhost:5173`). You'll be able to create new background jobs and see their status update in real-time.
